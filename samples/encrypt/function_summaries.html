@@ -1,0 +1,422 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Function Summaries</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-okaidia.min.css">
+        <style>
+            body {
+                font-family: 'Courier New', Courier, monospace;
+                background-color: #222;
+                color: #ddd;
+                padding: 20px;
+            }
+            .function {
+                margin-bottom: 20px;
+                padding: 10px;
+                border: 1px solid #444;
+                border-radius: 5px;
+            }
+            .function-name {
+                font-weight: bold;
+                color: #f92672;
+                font-size: 18px;
+                margin-bottom: 5px;
+            }
+            .function-desc {
+                color: #a6e22e;
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+            .inspect-button {
+                background-color: #444;
+                color: #ddd;
+                border: none;
+                padding: 8px 12px;
+                cursor: pointer;
+                border-radius: 3px;
+                transition: background-color 0.3s ease;
+            }
+            .inspect-button:hover {
+                background-color: #666;
+            }
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0,0,0,0.8);
+            }
+            .modal-content {
+                background-color: #333;
+                margin: 15% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                border-radius: 5px;
+                color: white;
+            }
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .close:hover,
+            .close:focus {
+                color: #fff;
+                text-decoration: none;
+            }
+            .code-snippet {
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 14px;
+                background-color: #222;
+                color: #ddd;
+                padding: 10px;
+                border-radius: 5px;
+                overflow-x: auto;
+                margin-top: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 style="text-align: center; color: #f92672;">Function Summaries</h1>
+    
+        <div class="function" id="main">
+            <div class="function-name">main</div>
+            <div class="function-desc">This C function encrypts a file named "flag" by XORing each byte with random values, shifting them based on another randomly generated number modulo the size of the input data. It also writes an encrypted version and timestamp to "flag.enc". If any discrepancy is found between expected initial value and actual content at in_FS_OFFSET + 0x28 (likely indicating tampering), it triggers a failure without returning.</div>
+            <button class="inspect-button" onclick="showModal('main')">Inspect</button>
+            <div id="main-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('main')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">main</h2>
+                    <pre class="code-snippet" id="main-code">
+undefined8 main(void)
+
+{
+  int iVar1;
+  time_t tVar2;
+  long in_FS_OFFSET;
+  uint local_40;
+  uint local_3c;
+  long local_38;
+  FILE *local_30;
+  size_t local_28;
+  void *local_20;
+  FILE *local_18;
+  long local_10;
+  
+  local_10 = *(long *)(in_FS_OFFSET + 0x28);
+  local_30 = fopen("flag","rb");
+  fseek(local_30,0,2);
+  local_28 = ftell(local_30);
+  fseek(local_30,0,0);
+  local_20 = malloc(local_28);
+  fread(local_20,local_28,1,local_30);
+  fclose(local_30);
+  tVar2 = time((time_t *)0x0);
+  local_40 = (uint)tVar2;
+  srand(local_40);
+  for (local_38 = 0; local_38 < (long)local_28; local_38 = local_38 + 1) {
+    iVar1 = rand();
+    *(byte *)((long)local_20 + local_38) = *(byte *)((long)local_20 + local_38) ^ (byte)iVar1;
+    local_3c = rand();
+    local_3c = local_3c & 7;
+    *(byte *)((long)local_20 + local_38) =
+         *(byte *)((long)local_20 + local_38) << (sbyte)local_3c |
+         *(byte *)((long)local_20 + local_38) >> 8 - (sbyte)local_3c;
+  }
+  local_18 = fopen("flag.enc","wb");
+  fwrite(&local_40,1,4,local_18);
+  fwrite(local_20,1,local_28,local_18);
+  fclose(local_18);
+  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return 0;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="__libc_csu_fini">
+            <div class="function-name">__libc_csu_fini</div>
+            <div class="function-desc">This C function terminates the current task without performing any cleanup operations, effectively ending its execution immediately upon entry.</div>
+            <button class="inspect-button" onclick="showModal('__libc_csu_fini')">Inspect</button>
+            <div id="__libc_csu_fini-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('__libc_csu_fini')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">__libc_csu_fini</h2>
+                    <pre class="code-snippet" id="__libc_csu_fini-code">
+void __libc_csu_fini(void)
+
+{
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="deregister_tm_clones">
+            <div class="function-name">deregister_tm_clones</div>
+            <div class="function-desc">This function "deregisters" TM clones by performing a no-operation (NOP). It essentially does nothing. Its logic is to end execution immediately without any operations, often used for cleanup or as placeholders. The presence of the WARNING comments suggests that some code has been identified and removed during debugging or optimization processes which were not essential but might have been part of larger unseen functionality in this context.</div>
+            <button class="inspect-button" onclick="showModal('deregister_tm_clones')">Inspect</button>
+            <div id="deregister_tm_clones-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('deregister_tm_clones')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">deregister_tm_clones</h2>
+                    <pre class="code-snippet" id="deregister_tm_clones-code">
+/* WARNING: Removing unreachable block (ram,0x001011e3) */
+/* WARNING: Removing unreachable block (ram,0x001011ef) */
+
+void deregister_tm_clones(void)
+
+{
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="FUN_001010e0">
+            <div class="function-name">FUN_001010e0</div>
+            <div class="function-desc">This C++ function, named `FUN_001010e0`, finalizes the execution of a thread by invoking `__cxa_finalize()` and then returns.</div>
+            <button class="inspect-button" onclick="showModal('FUN_001010e0')">Inspect</button>
+            <div id="FUN_001010e0-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('FUN_001010e0')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">FUN_001010e0</h2>
+                    <pre class="code-snippet" id="FUN_001010e0-code">
+void FUN_001010e0(void)
+
+{
+  __cxa_finalize();
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="register_tm_clones">
+            <div class="function-name">register_tm_clones</div>
+            <div class="function-desc">The function `register_tm_clones` does nothing and merely returns control to the calling environment. It's essentially a no-operation (noop) with an associated warning, indicating unused code that may need cleanup or review for redundancy.</div>
+            <button class="inspect-button" onclick="showModal('register_tm_clones')">Inspect</button>
+            <div id="register_tm_clones-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('register_tm_clones')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">register_tm_clones</h2>
+                    <pre class="code-snippet" id="register_tm_clones-code">
+/* WARNING: Removing unreachable block (ram,0x00101224) */
+/* WARNING: Removing unreachable block (ram,0x00101230) */
+
+void register_tm_clones(void)
+
+{
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="_init">
+            <div class="function-name">_init</div>
+            <div class="function-desc">Initializes an OpenSSL context and starts garbage collection.</div>
+            <button class="inspect-button" onclick="showModal('_init')">Inspect</button>
+            <div id="_init-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('_init')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">_init</h2>
+                    <pre class="code-snippet" id="_init-code">
+int _init(EVP_PKEY_CTX *ctx)
+
+{
+  int iVar1;
+  
+  iVar1 = __gmon_start__();
+  return iVar1;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="FUN_00101020">
+            <div class="function-name">FUN_00101020</div>
+            <div class="function-desc">This C code snippet is an indirect jump to execute the first instruction at a memory address, typically used for invoking undefined or external behavior. It does not represent conventional function logic and operations but rather appears as obfuscated assembly-like pseudocode which might be intended for exploiting hardware vulnerabilities such as side-channel attacks where code execution can occur via unusual means like indirect jumps to arbitrary memory locations.</div>
+            <button class="inspect-button" onclick="showModal('FUN_00101020')">Inspect</button>
+            <div id="FUN_00101020-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('FUN_00101020')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">FUN_00101020</h2>
+                    <pre class="code-snippet" id="FUN_00101020-code">
+void FUN_00101020(void)
+
+{
+  (*(code *)(undefined *)0x0)();
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="_fini">
+            <div class="function-name">_fini</div>
+            <div class="function-desc">`_fini` finalizes the execution of code, performing cleanup tasks before exiting.</div>
+            <button class="inspect-button" onclick="showModal('_fini')">Inspect</button>
+            <div id="_fini-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('_fini')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">_fini</h2>
+                    <pre class="code-snippet" id="_fini-code">
+void _fini(void)
+
+{
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="__do_global_dtors_aux">
+            <div class="function-name">__do_global_dtors_aux</div>
+            <div class="function-desc">This C++ function finalizes thread execution and cleans up by calling `__cxa_finalize()` while performing a no-operation for TM clones deregistration.</div>
+            <button class="inspect-button" onclick="showModal('__do_global_dtors_aux')">Inspect</button>
+            <div id="__do_global_dtors_aux-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('__do_global_dtors_aux')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">__do_global_dtors_aux</h2>
+                    <pre class="code-snippet" id="__do_global_dtors_aux-code">
+void __do_global_dtors_aux(void)
+
+{
+  if (completed_8061 != '\0') {
+    return;
+  }
+  FUN_001010e0(__dso_handle);
+  deregister_tm_clones();
+  completed_8061 = 1;
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="frame_dummy">
+            <div class="function-name">frame_dummy</div>
+            <div class="function-desc">The `frame_dummy` function calls an unused and potentially redundant no-operation, then immediately returns control to its caller without performing any meaningful operations.</div>
+            <button class="inspect-button" onclick="showModal('frame_dummy')">Inspect</button>
+            <div id="frame_dummy-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('frame_dummy')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">frame_dummy</h2>
+                    <pre class="code-snippet" id="frame_dummy-code">
+void frame_dummy(void)
+
+{
+  register_tm_clones();
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="__libc_csu_init">
+            <div class="function-name">__libc_csu_init</div>
+            <div class="function-desc">The function initializes an OpenSSL context and starts garbage collection. It repeatedly calls `_init(param_1)` until the Garbage Collector indicates that one more cleanup pass is needed by returning zero, after which it performs no further operations.</div>
+            <button class="inspect-button" onclick="showModal('__libc_csu_init')">Inspect</button>
+            <div id="__libc_csu_init-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('__libc_csu_init')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">__libc_csu_init</h2>
+                    <pre class="code-snippet" id="__libc_csu_init-code">
+void __libc_csu_init(EVP_PKEY_CTX *param_1,undefined8 param_2,undefined8 param_3)
+
+{
+  long lVar1;
+  
+  _init(param_1);
+  lVar1 = 0;
+  do {
+    (*(code *)(&__frame_dummy_init_array_entry)[lVar1])((ulong)param_1 & 0xffffffff,param_2,param_3)
+    ;
+    lVar1 = lVar1 + 1;
+  } while (lVar1 != 1);
+  return;
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="function" id="_start">
+            <div class="function-name">_start</div>
+            <div class="function-desc">The `processEntry` function invokes an endless loop and doesn't perform any operations. It serves as a placeholder or stub for potential future code.</div>
+            <button class="inspect-button" onclick="showModal('_start')">Inspect</button>
+            <div id="_start-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('_start')">&times;</span>
+                    <h2 style="color: #f92672; text-align: center;">_start</h2>
+                    <pre class="code-snippet" id="_start-code">
+void processEntry _start(undefined8 param_1,undefined8 param_2)
+
+{
+  undefined auStack_8 [8];
+  
+  __libc_start_main(main,param_2,&stack0x00000008,__libc_csu_init,__libc_csu_fini,param_1,auStack_8)
+  ;
+  do {
+                    /* WARNING: Do nothing block with infinite loop */
+  } while( true );
+}
+
+</pre>
+                </div>
+            </div>
+        </div>
+        
+    <script>
+        function showModal(functionName) {
+            var modal = document.getElementById(functionName + '-modal');
+            modal.style.display = 'block';
+            Prism.highlightElement(modal.querySelector('.code-snippet'));
+        }
+
+        function closeModal(functionName) {
+            var modal = document.getElementById(functionName + '-modal');
+            modal.style.display = 'none';
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-cpp.min.js"></script>
+    </body>
+    </html>
+    

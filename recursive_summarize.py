@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-import sys
 import os
 import json
 import graphlib
 import requests
 import backoff
 import argparse
+
+# For generating html web page for summaries
+from function_summeries import generate_function_summaries_html
+
 # For syntax highlighting
 from pygments import highlight, lexers, formatters
 
@@ -219,6 +222,11 @@ def main():
                 if args.verbose:
                     func = list(summary.keys())[0]
                     debug_summary(func, decompilations[func], summary[func])
+    
+    try:
+        generate_function_summaries_html(args.output, os.path.join(progdir, args.decompilations), args.progdir)
+    except Exception as e:
+        print('Failed to generate HTML for summaries',e)
 
 if __name__ == '__main__':
     main()
