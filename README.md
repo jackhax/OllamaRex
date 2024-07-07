@@ -10,7 +10,7 @@ You need:
 * [Python 3.9](https://www.python.org/downloads/release/python-390/)
 * [Ghidra](https://ghidra-sre.org/)
 * [ghidra_bridge](https://github.com/justfoxing/ghidra_bridge) installed and running in the project you want to analyze.
-* [Ollama with custom models](https://ollama.com/library/phi3)
+* [Ollama with custom models](https://ollama.com/library/phi3) installed and running.
 * The Python dependencies, which you can get with `pip install -r requirements.txt`
 
 ## Usage
