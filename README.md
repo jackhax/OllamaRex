@@ -1,15 +1,15 @@
-# GPT-WPRE: Whole-program Reverse Engineering with GPT-3
+# OllamaRex: Whole-program Reverse Engineering with Ollama
 
-This is a little toy prototype of a tool that attempts to summarize a whole binary using GPT-3 (specifically the `text-davinci-003` model), based on decompiled code provided by [Ghidra](https://ghidra-sre.org/). However, today's language models can only fit a small amount of text into their context window at once (4096 tokens for `text-davinci-003`, a couple hundred lines of code at most) -- most programs (and even some functions) are too big to fit all at once.
+This is a fork of moyix/gpt-wpre, a prototype of a tool that attempts to summarize a whole binary using LLMs (with Ollama), based on decompiled code provided by Ghidra. However, today's language models can only fit a small amount of text into their context window at once (4096 tokens for text-davinci-003, a couple hundred lines of code at most) -- most programs (and even some functions) are too big to fit all at once.
 
-GPT-WPRE attempts to work around this by recursively creating natural language summaries of a function's dependencies and then providing those as context for the function itself. It's pretty neat when it works! I have tested it on exactly one program, so YMMV.
+OllamaRex attempts to work around this by recursively creating natural language summaries of a function's dependencies and then providing those as context for the function itself. It's pretty neat when it works! Tested on exactly one program, so YMMV.
 
 ## Dependencies
 
 You need:
 * [Ghidra](https://ghidra-sre.org/)
 * [ghidra_bridge](https://github.com/justfoxing/ghidra_bridge) installed and running in the project you want to analyze.
-* [An OpenAI API key](https://beta.openai.com/account/api-keys)
+* [Ollama with custom models](https://ollama.com/library/phi3)
 * The Python dependencies, which you can get with `pip install -r requirements.txt`
 
 ## Usage
@@ -34,14 +34,14 @@ The script used for this is the creatively named `recursive_summarize.py`. It ta
 
 ```console
 $ python recursive_summarize.py --help
-usage: recursive_summarize.py [-h] [-f FUNCTION] [-d DECOMPILATIONS] [-g CALL_GRAPH]
-                              [-o OUTPUT] [-v] [-n] [-l MAX_LINES]
+usage: recursive_summarize.py [-h] [-f FUNCTION] [-d DECOMPILATIONS] [-g CALL_GRAPH] [-o OUTPUT] [-v] [-l MAX_LINES] -m MODEL
                               progdir
 
 positional arguments:
   progdir
 
 options:
+  -m  --model          Model name to use for summarization  [REQUIRED]
   -h, --help            show this help message and exit
   -f FUNCTION, --function FUNCTION
                         Summarize only this function (and dependencies)
@@ -55,36 +55,10 @@ options:
                         Maximum number of lines to summarize at a time
 ```
 
-**Important**: The GPT-3 API is not free! The model we're using, `text-davinci-003`, costs $0.02 per 1000 tokens, which can add up for a large program. You can use the `--dry-run` (`-n`) flag to estimate the cost of running GPT-WPRE on a program without actually running it:
-
 ```console
-$ python recursive_summarize.py -n libpng16.so.16.38.0_stripped
-===== API usage estimates =====
-Number of functions: 466
-Estimated API calls: 711
-Estimated prompt tokens: 784477
-Estimated generated tokens: 45601
-Estimated cost: $16.60
-```
-
-$16.60 is way too much for my academic budget, so let's try to summarize only a single function:
-
-```console
-$ python recursive_summarize.py -n -f png_read_info libpng16.so.16.38.0_stripped
-===== API usage estimates =====
-Number of functions: 72
-Estimated API calls: 76
-Estimated prompt tokens: 74311
-Estimated generated tokens: 2799
-Estimated cost: $1.54
-```
-
-Much better. Now to run it:
-
-```console
-$ python recursive_summarize.py -f png_read_info libpng16.so.16.38.0_stripped
+$ python recursive_summarize.py -m phi3 -f png_read_info samples\libpng16.so.16.38.0_stripped
 Summarizing functions: 100%|██████████████████████████| 72/72 [02:30<00:00,  2.09s/it]
-Wrote 72 summaries to summaries_png_read_info.jsonl.
+Wrote 72 summaries to summaries_png_read_info_phi3.jsonl.
 Final summary for png_read_info:
 This function checks the validity of a pointer, calls the related function, computes a CRC32 checksum, and calls the png_error/png_chunk_warning functions with an error message or warning, as well as setting various parameters for a PNG file.
 ```
@@ -102,28 +76,9 @@ The output is a JSON Lines file (`.jsonl`) with one JSON object per function. Ea
 
 Sample output for `libpng` is available in the `samples/libpng16.so.16.38.0_stripped` directory.
 
-#### Exploring/Debugging the Summaries
-
-I went a little overboard making this script so I'm including it in the repo even though it would need a bunch more work to be useful for anything other than `libpng`: `extras/debug_summaries.py`. For each function in a `summaries.jsonl` it shows the summary, the original function name (using the debug symbols), an a side-by-side view of the original source code and the decompiled code.
-
-If you want to run it yourself, you need to first get the `libpng` source, then run the script:
-
-```console
-$ cd samples/srcs
-$ bash clone.sh
-[...]
-$ cd ../..
-$ python extras/debug_summaries.py \
-    samples/bins/libpng16.so.16.38.0 \
-    samples/libpng16.so.16.38.0_stripped/summaries_png_read_info.jsonl \
-    samples/libpng16.so.16.38.0_stripped/decompilations.json
-```
-
-Alternatively you can just look at the sample output here: https://moyix.net/~moyix/libpng_png_set_info_summaries.html
-
 ### How It Works
 
-GPT-WPRE starts by performing a [topological sort](https://en.wikipedia.org/wiki/Topological_sorting) on the call graph to get a list of functions in the order they should be summarized. It then iteratively summarizes each function, using the summaries of its callees as context. For example, if we have the following call graph and we want to summarize function A:
+OllamaRex starts by performing a [topological sort](https://en.wikipedia.org/wiki/Topological_sorting) on the call graph to get a list of functions in the order they should be summarized. It then iteratively summarizes each function, using the summaries of its callees as context. For example, if we have the following call graph and we want to summarize function A:
 
 ```
 A -> B -------> C
@@ -168,6 +123,6 @@ This all happens in `recursive_summarize.py`'s `summarize_long_code` function.
 
 ## Limitations and Future Work
 
-* We don't try to deal with mutual recursion or other non-simple cycles in the call graph, and the topological sort will just throw an exception if it finds a cycle.
-* These prompts are the first ones that occurred to me, and probably some prompt engineering would improve the summaries!
-* Lots of ways this could be faster, e.g. by batching together requests to summarize things that don't depend on each other. Also pretty sure Ghidra has faster/better ways to get the call graph and decompilation.
+* The tool does not currently handle mutual recursion or other non-simple cycles in the call graph, and the topological sort will throw an exception if it encounters such scenarios.
+* The current prompts used for summarization are preliminary, and further prompt engineering could enhance the quality of the summaries.
+* There are opportunities to optimize the tool's performance, such as batching requests to summarize functions that are independent of each other. Additionally, Ghidra likely offers faster and more efficient methods to retrieve the call graph and decompilations.
