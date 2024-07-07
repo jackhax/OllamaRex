@@ -1,0 +1,1 @@
+{"_start": ["main", "__libc_csu_fini", "__libc_csu_init"], "__do_global_dtors_aux": ["deregister_tm_clones", "FUN_001010e0"], "frame_dummy": ["register_tm_clones"], "__libc_csu_init": ["_init", "__do_global_dtors_aux"], "_init": [], "FUN_00101020": [], "FUN_001010e0": [], "deregister_tm_clones": [], "register_tm_clones": [], "main": [], "__libc_csu_fini": [], "_fini": []}
