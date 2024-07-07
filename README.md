@@ -7,6 +7,7 @@ OllamaRex attempts to work around this by recursively creating natural language 
 ## Dependencies
 
 You need:
+* [Python 3.9](https://www.python.org/downloads/release/python-390/)
 * [Ghidra](https://ghidra-sre.org/)
 * [ghidra_bridge](https://github.com/justfoxing/ghidra_bridge) installed and running in the project you want to analyze.
 * [Ollama with custom models](https://ollama.com/library/phi3)
