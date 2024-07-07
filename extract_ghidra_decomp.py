@@ -2,7 +2,7 @@
 
 import ghidra_bridge
 
-# Initialize the Ghidra Bridge
+# Initialize the Ghidra Bridge.
 bridge = ghidra_bridge.GhidraBridge(namespace=globals(), hook_import=True)
 
 import os
