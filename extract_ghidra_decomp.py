@@ -1,17 +1,28 @@
 #!/usr/bin/env python
 
 import ghidra_bridge
-# Bring in all the Ghidra classes
+
+# Initialize the Ghidra Bridge
 bridge = ghidra_bridge.GhidraBridge(namespace=globals(), hook_import=True)
 
-import os, json
+import os
+import json
 from tqdm import tqdm
 from collections import defaultdict
 
-# Sketchy Ghidra remote imports
-from ghidra.app.decompiler import DecompInterface, DecompileOptions
+# Ensure all Ghidra classes are available via the bridge
+bridge.remote_import("ghidra.app.decompiler")
+bridge.remote_import("ghidra.program.model.listing.Function")
+bridge.remote_import("ghidra.util.task.ConsoleTaskMonitor")
 
-currentProgram = getCurrentProgram()
+# Sketchy Ghidra remote imports
+# import ghidra.app.decompiler
+from ghidra.app.decompiler import DecompInterface, DecompileOptions
+from ghidra.util.task import ConsoleTaskMonitor
+
+# Get the current program
+currentProgram = bridge.remote_eval("getCurrentProgram()")
+# .remote_evaluate("getCurrentProgram()")
 
 # Create output directory
 progName = currentProgram.getName()
@@ -28,7 +39,7 @@ for func in tqdm(functions, desc="Building call graph"):
     # Get the function name
     name = func.getName()
     funcNames[name] = func
-    for calledFunc in func.getCalledFunctions(getMonitor()):
+    for calledFunc in func.getCalledFunctions(ConsoleTaskMonitor()):
         if calledFunc.isThunk(): continue
         calledName = calledFunc.getName()
         if calledName == name: continue
@@ -52,7 +63,7 @@ decompiler.openProgram(currentProgram)
 decomps = {}
 for func in tqdm(functions, desc="Decompiling functions"):
     name = func.getName()
-    decompResult = decompiler.decompileFunction(func, 0, getMonitor())
+    decompResult = decompiler.decompileFunction(func, 0, ConsoleTaskMonitor())
     decompFunc = decompResult.getDecompiledFunction()
     if not decompFunc:
         missing.append(name)
@@ -61,7 +72,7 @@ for func in tqdm(functions, desc="Decompiling functions"):
 decompiler.closeProgram()
 
 # Save the decompilations
-with open(os.path.join(progName,"decompilations.json"), "w") as f:
+with open(os.path.join(progName, "decompilations.json"), "w") as f:
     json.dump(decomps, f)
     f.write("\n")
 
@@ -75,6 +86,6 @@ print(f"Missing {len(missing)} functions:")
 print(missing)
 
 # Save the call graph
-with open(os.path.join(progName,"call_graph.json"), "w") as f:
+with open(os.path.join(progName, "call_graph.json"), "w") as f:
     json.dump(callGraph, f)
     f.write("\n")
